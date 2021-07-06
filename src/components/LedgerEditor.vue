@@ -9,6 +9,8 @@
           v-model="alwaysshowcomments"
           label="Always Show Comments"
         ></v-checkbox>
+        <v-select v-model="onlyenable" multiple :items="['Date', 'Status', 'Description', 'Comment', 'Amount', 'Account', 'Account', 'Second Account']">
+        </v-select>
            <v-row justify="center">
              <v-date-picker
                v-model="months"
@@ -57,15 +59,15 @@
     </v-app-bar>
     <v-main>
         <v-container>
-            <v-expansion-panels>
+            <v-expansion-panels v-model="textLedgerOpen">
                 <v-expansion-panel>
-                    <v-expansion-panel-header>Text-based Ledger ({{ textLedger ? ((textLedger.match(/\n/gm)||[]).length + 1) : 0 }} lines)</v-expansion-panel-header>
+                    <v-expansion-panel-header>Text-based Ledger</v-expansion-panel-header>
                     <v-expansion-panel-content>
                         <v-textarea v-model="textLedger" label="Text Ledger" @change="textLedgerChanged" rows="10" filled></v-textarea>
                     </v-expansion-panel-content>
                 </v-expansion-panel>
             </v-expansion-panels>
-            <LedgerBlock v-for="lblock in sortedLedger" v-bind:key="lblock.id" v-bind:lblock="lblock" v-bind:alwaysshowcomments="alwaysshowcomments" v-bind:accounts="accounts"></LedgerBlock>
+            <LedgerBlock v-for="lblock in sortedLedger" v-bind:key="lblock.id" v-bind:lblock="lblock" v-bind:alwaysshowcomments="alwaysshowcomments" v-bind:accounts="accounts" v-bind:onlyenable="onlyenable"></LedgerBlock>
         </v-card>
     </v-container>
 </v-main>
@@ -133,7 +135,9 @@ export default {
                 draweropen: null,
                 shownontransaction: true,
                 alwaysshowcomments: false,
-                accounts: []
+                accounts: [],
+                onlyenable: [],
+                textLedgerOpen: 0
             }
 		},
         components: { 
@@ -141,20 +145,32 @@ export default {
         },
 
 		// watch ledger change flushing to textarea
-		watch: {
+        watch: {
 			ledger: {
 				deep: true,
 				handler: function (ob) {
-                    this.textLedger = toLedger({blocks: this.ledger});
-                    let newLedger = fromLedger(this.textLedger);
-                    this.accounts = newLedger.accounts;
+                    if (this.textLedgerOpen === 0) {
+                        this.updateTextLedger();
+                    }
                 }
-			}
-		},
+            },
+            textLedgerOpen: {
+                handler: function(ob) {
+                    if (this.textLedgerOpen === 0) {
+                        this.updateTextLedger();
+                    }
+                }
+            }
+        },
 
 		// methods that implement data logic.
 		// note there's no DOM manipulation here at all.
-		methods: {
+        methods: {
+            updateTextLedger: function() {
+                this.textLedger = toLedger({blocks: this.ledger});
+                let newLedger = fromLedger(this.textLedger);
+                this.accounts = newLedger.accounts;
+            },
 			addTransactionBlock: function () {
                 let lastId = -1;
                 if (this.ledger.length > 0)
