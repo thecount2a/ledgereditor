@@ -13,18 +13,19 @@
                             <template v-slot:activator="{ on, attrs }">
                                 <v-text-field
                                     
-                                    v-model="lblock.date"
+                                    v-model="realtime_transaction_date"
                                     label="Transaction Date"
                                     v-bind="attrs"
                                     v-on="on"
                                     filled
                                     hide-details="auto"
                                     :disabled="onlyenable.length > 0 && !onlyenable.includes('Date')"
+                                    @change="flushTransactionDate()"
                                 ></v-text-field>
                             </template>
                             <v-date-picker
-                                v-model="lblock.date"
-                                @input="datemenu = false"
+                                v-model="realtime_transaction_date"
+                                @input="datemenu = false;flushTransactionDate()"
                             ></v-date-picker>
                         </v-menu>
                     </v-col>
@@ -93,11 +94,27 @@ export default {
     data: function () {
         return {
             datemenu: false,
-            open: false
+            open: false,
+            realtime_transaction_date: this.lblock.date
         }
     },
 
     methods: {
+        flushTransactionDate: function() {
+            this.lblock.date = this.realtime_transaction_date;
+        }
+    },
+
+    watch: {
+		lblock: {
+            deep: true,
+            handler: function (ob) {
+                if (this.lblock.date !== this.realtime_transaction_date)
+                {
+                    this.realtime_transaction_date = this.lblock.date;
+                }
+            }
+        }
     },
 
     computed: {
