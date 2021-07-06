@@ -171,6 +171,9 @@ export default {
                 let newLedger = fromLedger(this.textLedger);
                 this.accounts = newLedger.accounts;
             },
+            scrollToBottom: function() {
+                window.scrollTo(0, document.body.scrollHeight || document.documentElement.scrollHeight);
+            },
 			addTransactionBlock: function () {
                 let lastId = -1;
                 if (this.ledger.length > 0)
@@ -178,6 +181,7 @@ export default {
                     lastId = this.ledger[this.ledger.length - 1].id;
                 }
 				this.ledger.push({id: lastId + 1, type: "transaction", lines: [], postingIndexes: [], date: this.$moment().format('YYYY-MM-DD'), status: "", code: "", description: "", comment: "", code: ""});
+                setTimeout(this.scrollToBottom, 10); // Scroll after slight delay so that the scrolling happens after the GUI has added the new elements
 			},
 			addCommentBlock: function () {
                 let lastId = -1;
@@ -186,6 +190,7 @@ export default {
                     lastId = this.ledger[this.ledger.length - 1].id;
                 }
 				this.ledger.push({id: lastId + 1, type: "comment", text: "", commentType: ";"});
+                setTimeout(this.scrollToBottom, 10); // Scroll after slight delay so that the scrolling happens after the GUI has added the new elements
 			},
 			addOtherBlock: function () {
                 let lastId = -1;
@@ -194,6 +199,7 @@ export default {
                     lastId = this.ledger[this.ledger.length - 1].id;
                 }
 				this.ledger.push({id: lastId + 1, type: "other", text: "<Replace this with ledger entry>", lines:[], postingIndexes: []});
+                setTimeout(this.scrollToBottom, 10); // Scroll after slight delay so that the scrolling happens after the GUI has added the new elements
 			},
             textLedgerChanged: function() {
                 let newLedger = fromLedger(this.textLedger);
