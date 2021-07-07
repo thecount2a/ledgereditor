@@ -209,8 +209,8 @@ export default {
                             computeRemaining = false;
                             break;
                         }
-                        let thisPrefix = thisAmount.replace('-', '').replace(' ', '').replace(/[0-9\,\.\-]+.*/, '');
-                        let thisPostfix = thisAmount.replace('-', '').replace(' ', '').replace(/.*[0-9\,\.\-]+/, '');
+                        let thisPrefix = thisAmount.replace('-', '').replace(/[0-9 \,\.\-]*[0-9].*/, '');
+                        let thisPostfix = thisAmount.replace('-', '').replace(/.*[0-9][0-9 \,\.\-]*/, '');
                         let thisRawAmount = thisAmount.replace(/[^0-9\,\.\-]+/g, '');
                         let thisRawAmountNoDots = thisAmount.replace(/[^0-9\,\-]+/g, '');
                         let thisRawAmountNoCommas = thisAmount.replace(/[^0-9\.\-]+/g, '');
