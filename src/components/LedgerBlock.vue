@@ -50,11 +50,11 @@
                     </v-col>
                     <v-col cols="2" v-if="!open && lblock.type != 'comment' && (lblock.postingIndexes.length > 0 || lblock.type =='transaction')">
                         <v-text-field hide-details="auto" :filled="alwaysshowcomments?false:true" label="Amount" v-model="firstAmount" :disabled="onlyenable.length > 0 && !onlyenable.includes('Amount')">
-                            <v-icon slot="prepend" :color="firstAmount.search('-')>=0?'red':'black'">
-                                {{ firstAmount.search('-')>=0?'mdi-arrow-right-bold':'mdi-arrow-left-bold' }}
+                            <v-icon slot="prepend" :color="firstAmount.indexOf('-')>=0?'red':'black'">
+                                {{ firstAmount.indexOf('-')>=0?'mdi-arrow-right-bold':'mdi-arrow-left-bold' }}
                             </v-icon>
-                            <v-icon slot="append-outer" :color="firstAmount.search('-')>=0?'red':'black'">
-                                {{ firstAmount.search('-')>=0?'mdi-arrow-right-bold':'mdi-arrow-left-bold' }}
+                            <v-icon slot="append-outer" :color="firstAmount.indexOf('-')>=0?'red':'black'">
+                                {{ firstAmount.indexOf('-')>=0?'mdi-arrow-right-bold':'mdi-arrow-left-bold' }}
                             </v-icon>
                         </v-text-field>
                     </v-col>
@@ -74,7 +74,7 @@
                                     <v-combobox hide-details="auto" v-model="lline.account" :items="accounts" label="Account" :disabled="onlyenable.length > 0 && !onlyenable.includes('Account')"></v-combobox>
                                 </v-col>
                                 <v-col cols="2">
-                                    <v-text-field hide-details="auto" label="Amount" v-model="lline.amount" :disabled="onlyenable.length > 0 && !onlyenable.includes('Amount')"></v-text-field>
+                                    <v-text-field hide-details="auto" :label="'Amount'+(lline.amount == '' ? computedAmountInfo : '')" v-model="lline.amount" :disabled="onlyenable.length > 0 && !onlyenable.includes('Amount')"></v-text-field>
                                 </v-col>
                                 <v-col cols="4">
                                     <v-text-field hide-details="auto" label="Comment" v-model="lline.comment" :disabled="onlyenable.length > 0 && !onlyenable.includes('Comment')"></v-text-field>
@@ -187,6 +187,121 @@ export default {
                 if (this.lblock.postingIndexes.length == 2)
                 {
                     this.lblock.lines[this.lblock.postingIndexes[1]].account = value;
+                }
+            }
+        },
+        computedAmountInfo: {
+            get: function() {
+                let computeRemaining = true;
+                let prefixCurrency = null;
+                let postfixCurrency = null;
+                let maxDotDecimalPlaces = 0;
+                let maxCommaDecimalPlaces = 0;
+                let rawAmounts = [];
+                for (var i = 0; i < this.lblock.postingIndexes.length; i++)
+                {
+                    let thisAmount = this.lblock.lines[this.lblock.postingIndexes[i]].amount;
+                    if (thisAmount.length > 0)
+                    {
+                        if (thisAmount.indexOf("=") >= 0)
+                        {
+                            // If there are any assignments or assertions, we cannot compute remaining
+                            computeRemaining = false;
+                            break;
+                        }
+                        let thisPrefix = thisAmount.replace('-', '').replace(' ', '').replace(/[0-9\,\.\-]+.*/, '');
+                        let thisPostfix = thisAmount.replace('-', '').replace(' ', '').replace(/.*[0-9\,\.\-]+/, '');
+                        let thisRawAmount = thisAmount.replace(/[^0-9\,\.\-]+/g, '');
+                        let thisRawAmountNoDots = thisAmount.replace(/[^0-9\,\-]+/g, '');
+                        let thisRawAmountNoCommas = thisAmount.replace(/[^0-9\.\-]+/g, '');
+                        if (prefixCurrency !== null && prefixCurrency != thisPrefix)
+                        {
+                            // If there are different currencies, we cannot compute remaining
+                            computeRemaining = false;
+                            break;
+                        }
+                        else
+                        {
+                            prefixCurrency = thisPrefix;
+                        }
+                        if (postfixCurrency !== null && postfixCurrency != thisPostfix)
+                        {
+                            // If there are different currencies, we cannot compute remaining
+                            computeRemaining = false;
+                            break;
+                        }
+                        else
+                        {
+                            postfixCurrency = thisPostfix;
+                        }
+                        if (thisRawAmountNoCommas.indexOf('.') >= 0)
+                        {
+                            let thisDotDecimalPlaces = thisRawAmountNoCommas.length - thisRawAmountNoCommas.indexOf('.') - 1;
+                            if (thisDotDecimalPlaces > maxDotDecimalPlaces)
+                            {
+                                maxDotDecimalPlaces = thisDotDecimalPlaces;
+                            }
+                        }
+                        if (thisRawAmountNoDots.indexOf(',') >= 0)
+                        {
+                            let thisCommaDecimalPlaces = thisRawAmountNoDots.length - thisRawAmountNoDots.indexOf(',') - 1;
+                            if (thisCommaDecimalPlaces > maxCommaDecimalPlaces)
+                            {
+                                maxCommaDecimalPlaces = thisCommaDecimalPlaces;
+                            }
+                        }
+                        rawAmounts.push(thisRawAmount);
+                    }
+                }
+                if (computeRemaining && rawAmounts.length > 0)
+                {
+                    let decimalPoint = ".";
+                    let maxDecimalPlaces = maxDotDecimalPlaces;
+                    // Figure out what type of decimal point to use
+                    if (maxDotDecimalPlaces != 0 && maxCommaDecimalPlaces != 0)
+                    {
+                        decimalPoint = (maxDotDecimalPlaces < maxCommaDecimalPlaces) ? "." : ",";
+                        maxDecimalPlaces = (maxDotDecimalPlaces < maxCommaDecimalPlaces) ? maxDotDecimalPlaces : maxCommaDecimalPlaces;
+                    }
+                    else if (maxCommaDecimalPlaces != 0)
+                    {
+                        decimalPoint = ",";
+                        maxDecimalPlaces = maxCommaDecimalPlaces;
+                    }
+                    let totalAmount = 0;
+                    // Add up total amount leftover with all transactions
+                    for (var i = 0; i < rawAmounts.length; i++)
+                    {
+                        let thisDecimalPlaces = 0;
+                        if (rawAmounts[i].indexOf(decimalPoint) >= 0)
+                        {
+                            thisDecimalPlaces = rawAmounts[i].length - rawAmounts[i].indexOf(decimalPoint) - 1;
+                        }
+                        let thisNumericAmount = parseInt(rawAmounts[i].replace(/[\,\.]/g, ''));
+                        totalAmount += thisNumericAmount * Math.pow(10, maxDecimalPlaces - thisDecimalPlaces);
+                    }
+                    let stringAmount = Math.abs(totalAmount).toString();
+                    // Pad zeros if necessary
+                    if (stringAmount.length < maxDecimalPlaces + 1)
+                    {
+                        stringAmount = '0'.repeat((maxDecimalPlaces + 1) - stringAmount.length) + stringAmount;
+                    }
+                    // Add in the decimal marker, if necessary
+                    if (maxDecimalPlaces > 0)
+                    {
+                        stringAmount = stringAmount.slice(0, stringAmount.length - maxDecimalPlaces) + decimalPoint + stringAmount.slice(-maxDecimalPlaces);
+                    }
+                    if (totalAmount > 0)
+                    {
+                        // Add in minus sign, if necessary
+                        stringAmount = '-' + stringAmount;
+                    }
+                    stringAmount = prefixCurrency + stringAmount + postfixCurrency;
+                    return " (leftover: "+stringAmount+")";
+                }
+                else
+                {
+                    return "";
                 }
             }
         }
