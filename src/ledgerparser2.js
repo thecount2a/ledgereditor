@@ -3,10 +3,11 @@ const fromLedger = function(ledger) {
     let transactionIndexes = [];
     let lines = ledger.split(/\r?\n/);
     let accountList = {};
-    const txnRegex = /^([0-9]+[\-\/][0-9]+[\-\/][0-9]+) (! |\* )?(\(.*\) )?([^;]*)(;)?(.*)?$/;
+    const txnRegex = /^([0-9]+[\-\/][0-9]+[\-\/][0-9]+)( (\!|\*)?( )?(\(.*\) )?([^;]*))?(;(.*)?)?$/;
     for (var i = 0; i < lines.length; i++)
     {
         let txnRegexResult = txnRegex.exec(lines[i]);
+        console.log(txnRegexResult);
 
         // Test to see if the first line of this block matches a transaction
         if (txnRegexResult)
@@ -14,10 +15,10 @@ const fromLedger = function(ledger) {
             // Vuetify does not like slashes in dates
             let thisDate = txnRegexResult[1].replace(/\//g, '-');
             blocks.push({type: "transaction", date: thisDate, 
-                status: (txnRegexResult[2] ? txnRegexResult[2].substring(0, txnRegexResult[2].length - 1) : ""),
-                code: (txnRegexResult[3] ? txnRegexResult[3].substring(1, txnRegexResult[3].length - 2) : ""),
-                description: (txnRegexResult[4] ? txnRegexResult[4] : ""),
-                comment: (txnRegexResult[6] ? txnRegexResult[6] : ""),
+                status: (txnRegexResult[3] ? txnRegexResult[3] : ""),
+                code: (txnRegexResult[5] ? txnRegexResult[5].substring(1, txnRegexResult[5].length - 2) : ""),
+                description: (txnRegexResult[6] ? txnRegexResult[6] : ""),
+                comment: (txnRegexResult[8] ? txnRegexResult[8] : ""),
                 lines: [], postingIndexes: []
             });
             // Save a list of blocks which are transactions for ease of processing
