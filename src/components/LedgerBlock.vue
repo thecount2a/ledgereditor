@@ -30,7 +30,8 @@
                         </v-menu>
                     </v-col>
                     <v-col cols="1" v-if="lblock.type == 'transaction'">
-                        <v-select hide-details="auto" filled v-model="lblock.status" :items="['', '!', '*']" label="Status" :disabled="onlyenable.length > 0 && !onlyenable.includes('Status')"></v-select>
+                        <v-select v-if="!showcodeinsteadofstatus" hide-details="auto" filled v-model="lblock.status" :items="['', '!', '*']" label="Status" :disabled="onlyenable.length > 0 && !onlyenable.includes('Status')"></v-select>
+                        <v-text-field v-else hide-details="auto" filled label="Code" v-model="lblock.code" :disabled="onlyenable.length > 0 && !onlyenable.includes('Code')"></v-text-field>
                     </v-col>
                     <v-col :cols="(open || alwaysshowcomments) ? 4 : 2" v-if="lblock.type == 'transaction'">
                         <v-text-field hide-details="auto" filled label="Description" v-model="lblock.description" :disabled="onlyenable.length > 0 && !onlyenable.includes('Description')"></v-text-field>
@@ -90,7 +91,7 @@
 <script>
 export default {
     name: 'LedgerBlock',
-    props: ['lblock', 'accounts', 'alwaysshowcomments', 'onlyenable'],
+    props: ['lblock', 'accounts', 'alwaysshowcomments', 'onlyenable', 'showcodeinsteadofstatus'],
     data: function () {
         return {
             datemenu: false,
