@@ -239,15 +239,17 @@ export default {
                 {
                     searchString = searchString.toLocaleLowerCase();
                 }
-                if (searchFirstAccount || searchType == "First Account" || (searchType == "All Fields" && searchString))
+                /* Omit checking for "All Fields" since that will be handled by the "Any Account" block below */
+                if (searchFirstAccount || searchType == "First Account")
                 {
                     if ((block.type == "transaction" || block.type == "other") && block.postingIndexes.length > 0)
                     {
-                        if (searchFirstAccount && block.lines[block.postingIndexes[0]].account == searchFirstAccount)
+                        if (searchFirstAccount && block.lines[block.postingIndexes[0]].account != searchFirstAccount)
                         {
-                            return true;
+                            // searchFirstAccount is considered an "AND" operation. If it fails, return false.
+                            return false;
                         }
-                        else if (searchType == "First Account")
+                        if (searchType == "First Account")
                         {
                             if (caseSensitive)
                             {
@@ -265,8 +267,9 @@ export default {
                             }
                         }
                     }
-                    if (searchFirstAccount || searchType == "First Account")
+                    else if (searchFirstAccount)
                     {
+                        /* If we are using searchFirstAccount and this is not a transaction or the transaction has no postings, return false */
                         return false;
                     }
                 }
