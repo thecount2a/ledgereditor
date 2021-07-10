@@ -7,7 +7,6 @@ const fromLedger = function(ledger) {
     for (var i = 0; i < lines.length; i++)
     {
         let txnRegexResult = txnRegex.exec(lines[i]);
-        console.log(txnRegexResult);
 
         // Test to see if the first line of this block matches a transaction
         if (txnRegexResult)

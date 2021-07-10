@@ -273,6 +273,7 @@ export default {
                         return false;
                     }
                 }
+                // If "All Fields" is being used but no search string is provided, just match everything
                 if (searchType == "All Fields" && !searchString)
                 {
                     return true;

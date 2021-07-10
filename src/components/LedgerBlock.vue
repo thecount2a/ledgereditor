@@ -63,12 +63,15 @@
                         <v-combobox hide-details="auto" :filled="alwaysshowcomments?false:true" v-model="secondAccount" :items="accounts" label="Second Account" :disabled="lblock.postingIndexes.length > 2 || (onlyenable.length > 0 && !onlyenable.includes('Second Account'))"></v-combobox>
                     </v-col>
                 </v-row>
-                <v-row v-if="lblock.type != 'comment'" no-gutters>
-                    <v-icon @click="open = !open" :tabindex="onlyenable.length > 0 ? -1 : undefined">{{ open ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                <v-row v-if="lblock.type != 'comment'" no-gutters justify="end">
+                    <v-col cols="1" align="end">
+                        <v-icon v-if="open" @click="addPosting()" :tabindex="onlyenable.length > 0 ? -1 : undefined" color="green">mdi-plus-thick</v-icon>
+                        <v-icon @click="open = !open" :tabindex="onlyenable.length > 0 ? -1 : undefined">{{ open ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
+                    </v-col>
                 </v-row>
                 <v-expand-transition v-if="(lblock.type == 'other' && lblock.text != '') || lblock.type == 'transaction'">
                     <div v-show="open">
-                        <div v-for="lline in lblock.lines">
+                        <div v-for="(lline,lineIndex) in lblock.lines">
                             <v-row v-if="lline.type=='posting'" no-gutters>
                                 <v-spacer></v-spacer>
                                 <v-col cols="3">
@@ -78,7 +81,9 @@
                                     <v-text-field hide-details="auto" :label="'Amount'+(lline.amount == '' ? computedAmountInfo : '')" v-model="lline.amount" :disabled="onlyenable.length > 0 && !onlyenable.includes('Amount')"></v-text-field>
                                 </v-col>
                                 <v-col cols="4">
-                                    <v-text-field hide-details="auto" label="Comment" v-model="lline.comment" :disabled="onlyenable.length > 0 && !onlyenable.includes('Comment')"></v-text-field>
+                                    <v-text-field hide-details="auto" label="Comment" v-model="lline.comment" :disabled="onlyenable.length > 0 && !onlyenable.includes('Comment')">
+                                        <v-icon @click="deletePosting(lineIndex)" slot="append-outer" color="red">mdi-delete</v-icon>
+                                    </v-text-field>
                                 </v-col>
                             </v-row>
                         </div>
@@ -103,6 +108,23 @@ export default {
     methods: {
         flushTransactionDate: function() {
             this.lblock.date = this.realtime_transaction_date;
+        },
+        addPosting: function() {
+            this.lblock.lines.push({type: "posting", account: "", amount: "", comment: "", status: ""});
+            this.lblock.postingIndexes.push(this.lblock.lines.length - 1);
+        },
+        deletePosting: function(lineIndex) {
+            // Remove line
+            this.lblock.lines.splice(lineIndex, 1);
+            // Remove all posting indexes so we can rebuild it
+            this.lblock.postingIndexes.splice(0, this.lblock.postingIndexes.length);
+            for (var i = 0; i < this.lblock.lines.length; i++)
+            {
+                if (this.lblock.lines[i].type == "posting")
+                {
+                    this.lblock.postingIndexes.push(i);
+                }
+            }
         }
     },
 
