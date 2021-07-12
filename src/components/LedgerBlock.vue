@@ -64,8 +64,18 @@
                     </v-col>
                 </v-row>
                 <v-row v-if="lblock.type != 'comment'" no-gutters justify="end">
-                    <v-col cols="1" align="end">
+                    <v-col cols="12" align="end">
                         <v-icon v-if="open" @click="addPosting()" :tabindex="onlyenable.length > 0 ? -1 : undefined" color="green">mdi-plus-thick</v-icon>
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn icon v-bind="attrs" v-on="on">
+                                    <v-icon>mdi-dots-vertical</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item @click="deleteTransaction()"><v-list-item-title>Delete Transaction</v-list-item-title></v-list-item>
+                            </v-list>
+                        </v-menu>
                         <v-icon @click="open = !open" :tabindex="onlyenable.length > 0 ? -1 : undefined">{{ open ? 'mdi-chevron-up' : 'mdi-chevron-down' }}</v-icon>
                     </v-col>
                 </v-row>
@@ -125,6 +135,9 @@ export default {
                     this.lblock.postingIndexes.push(i);
                 }
             }
+        },
+        deleteTransaction: function() {
+            this.$emit('delete-transaction', this);
         }
     },
 

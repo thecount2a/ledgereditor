@@ -99,7 +99,7 @@
                         </v-expansion-panel-content>
                     </v-expansion-panel>
                 </v-expansion-panels>
-                <LedgerBlock v-for="lblock in sortedLedger" v-bind:key="lblock.id" v-bind:lblock="lblock" v-bind:alwaysshowcomments="alwaysshowcomments" v-bind:accounts="accounts" v-bind:onlyenable="onlyenable" v-bind:showcodeinsteadofstatus="showcodeinsteadofstatus"></LedgerBlock>
+                <LedgerBlock v-for="lblock in filteredLedger" v-bind:key="lblock.id" v-bind:lblock="lblock" v-bind:alwaysshowcomments="alwaysshowcomments" v-bind:accounts="accounts" v-bind:onlyenable="onlyenable" v-bind:showcodeinsteadofstatus="showcodeinsteadofstatus" @delete-transaction="deleteTransaction(lblock.id)"></LedgerBlock>
             </v-container>
         </v-main>
     </div>
@@ -161,7 +161,7 @@ export default {
         },
 
         computed: {
-            sortedLedger: function() {
+            filteredLedger: function() {
                 return this.$options.filters.filterBlocks(this.ledger, this.months, this.shownontransaction, this.searchMatches, this.searchFirstAccount, this.searchType, this.searchString, this.caseSensitive, this.$moment);
             },
             searchStringRaw: {
@@ -229,6 +229,17 @@ export default {
 		// methods that implement data logic.
 		// note there's no DOM manipulation here at all.
         methods: {
+            deleteTransaction: function(id) {
+                for (var i = 0; i < this.ledger.length; i++)
+                {
+                    if (this.ledger[i].id == id)
+                    {
+                        this.ledger.splice(i, 1);
+                        return;
+                    }
+                }
+                alert("Could not find transaction in master list");
+            },
             searchMatches: function(block, searchFirstAccount, searchType, searchString, caseSensitive) {
                 /* Sometimes this ends up as "null" if the clear button is used. Deal with it. */
                 if (!searchString)
