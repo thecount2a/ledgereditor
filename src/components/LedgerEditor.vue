@@ -99,7 +99,7 @@
                         </v-expansion-panel-content>
                     </v-expansion-panel>
                 </v-expansion-panels>
-                <LedgerBlock v-for="lblock in filteredLedger" v-bind:key="lblock.id" v-bind:lblock="lblock" v-bind:alwaysshowcomments="alwaysshowcomments" v-bind:accounts="accounts" v-bind:onlyenable="onlyenable" v-bind:showcodeinsteadofstatus="showcodeinsteadofstatus" @delete-transaction="deleteTransaction(lblock.id)"></LedgerBlock>
+                <LedgerBlock v-for="lblock in filteredLedger" v-bind:key="lblock.id" v-bind:lblock="lblock" v-bind:alwaysshowcomments="alwaysshowcomments" v-bind:accounts="accounts" v-bind:onlyenable="onlyenable" v-bind:showcodeinsteadofstatus="showcodeinsteadofstatus" @change="ledgerBlockChanged" @delete-transaction="deleteTransaction(lblock.id)"></LedgerBlock>
             </v-container>
         </v-main>
     </div>
@@ -229,6 +229,28 @@ export default {
 		// methods that implement data logic.
 		// note there's no DOM manipulation here at all.
         methods: {
+            ledgerBlockChanged(val) {
+                for (var i = 0; i < this.ledger.length; i++)
+                {
+                    if (this.ledger[i].id == val.id)
+                    {
+                        /* Do a one-level deep copy */
+                        for (let prop in val)
+                        {
+                            if (typeof val[prop] == "object")
+                            {
+                                this.ledger[i][prop] = JSON.parse(JSON.stringify(val[prop]))
+                            }
+                            else
+                            {
+                                this.ledger[i][prop] = val[prop]
+                            }
+                        }
+                        return;
+                    }
+                }
+                console.log("Could not find changed transaction in master list");
+            },
             deleteTransaction: function(id) {
                 for (var i = 0; i < this.ledger.length; i++)
                 {
@@ -238,7 +260,7 @@ export default {
                         return;
                     }
                 }
-                alert("Could not find transaction in master list");
+                console.log("Could not find deleted transaction in master list");
             },
             searchMatches: function(block, searchFirstAccount, searchType, searchString, caseSensitive) {
                 /* Sometimes this ends up as "null" if the clear button is used. Deal with it. */
