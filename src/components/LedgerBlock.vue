@@ -296,11 +296,11 @@ export default {
 							computeRemaining = false
 							break
 						}
-						const thisPrefix = thisAmount.replace('-', '').replace(/[0-9 ,\\.\\-]*[0-9].*/, '')
-						const thisPostfix = thisAmount.replace('-', '').replace(/.*[0-9][0-9 ,\\.\\-]*/, '')
-						const thisRawAmount = thisAmount.replace(/[^0-9,\\.\\-]+/g, '')
-						const thisRawAmountNoDots = thisAmount.replace(/[^0-9,\\-]+/g, '')
-						const thisRawAmountNoCommas = thisAmount.replace(/[^0-9\\.\\-]+/g, '')
+						const thisPrefix = thisAmount.replace('-', '').replace(/[0-9 ,\\.-]*[0-9].*/, '')
+						const thisPostfix = thisAmount.replace('-', '').replace(/.*[0-9][0-9 ,\\.-]*/, '')
+						const thisRawAmount = thisAmount.replace(/[^0-9,\\.-]+/g, '')
+						const thisRawAmountNoDots = thisAmount.replace(/[^0-9,-]+/g, '')
+						const thisRawAmountNoCommas = thisAmount.replace(/[^0-9\\.-]+/g, '')
 						if (prefixCurrency !== null && prefixCurrency !== thisPrefix) {
 							// If there are different currencies, we cannot compute remaining
 							computeRemaining = false
