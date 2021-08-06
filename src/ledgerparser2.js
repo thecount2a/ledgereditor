@@ -3,7 +3,7 @@ const fromLedger = function(ledger) {
 	const transactionIndexes = []
 	const lines = ledger.split(/\r?\n/)
 	const accountList = {}
-	const txnRegex = /^([0-9]+[-\\/][0-9]+[-\\/][0-9]+)( (\\!|\\*)?( )?(\\(.*\\) )?([^;]*))?(;(.*)?)?$/
+	const txnRegex = /^([0-9]+[-\\/][0-9]+[-\\/][0-9]+)( (!|\*)?( )?(\(.*\) )?([^;]*))?(;(.*)?)?$/
 	for (let i = 0; i < lines.length; i++) {
 		const txnRegexResult = txnRegex.exec(lines[i])
 
